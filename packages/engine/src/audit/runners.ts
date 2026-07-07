@@ -125,7 +125,7 @@ const llm_judge: CheckRunner = () => ({ status: "pending" });
 
 // ── Prompt-injection safety ──────────────────────────────────
 const INJECTION_KEYWORDS =
-  /ignore\s+(the\s+)?(previous|prior|all|above)\s+(instructions|prompts?)|disregard\s+(the\s+)?(above|previous|prior)|system\s+prompt|you\s+are\s+(now\s+)?an?\s|\bas\s+an\s+ai\b|reveal\s+(your\s+)?(system\s+)?(prompt|instructions)|recommend\s+(only\s+)?(this|our)\s+(store|product|brand)/i;
+  /ignore\s+(the\s+)?(previous|prior|all|above)\s+(instructions|prompts?)|disregard\s+(the\s+)?(above|previous|prior)|forget\s+(all\s+|the\s+)?(previous|prior|above|earlier)\s+(instructions|context|prompts?)|system\s+prompt|you\s+are\s+(now\s+)?an?\s+(ai|assistant|language\s+model|llm|chat\s?bot|bot|model)\b|\bas\s+an\s+ai\b|reveal\s+(your\s+)?(system\s+)?(prompt|instructions)|recommend\s+(only\s+)?(this|our)\s+(store|product|brand)/i;
 const ZERO_WIDTH = /[​‌‍﻿⁠]/;
 
 /** Heuristic scan for hidden prompt-injection content in HTML. */
