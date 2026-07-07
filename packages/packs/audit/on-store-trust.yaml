@@ -1,0 +1,31 @@
+id: on-store-trust
+type: audit
+area: on_store
+version: 0.1.0
+engineApi: ^0.1.0
+label: { en: "Store trust", vi: "Độ tin cậy store" }
+criteria:
+  - id: trust.about
+    label: { en: "About page" }
+    group: trust
+    area: on_store
+    weight: medium
+    scope: store
+    check: page_exists
+    params: { page: "about" }
+    scoring:
+      "0": "No About page"
+      "50": "Thin About page"
+      "100": "Clear About page"
+  - id: trust.policies
+    label: { en: "Policies page" }
+    group: trust
+    area: on_store
+    weight: medium
+    scope: store
+    check: page_exists
+    params: { page: "policies" }
+    scoring:
+      "0": "No policies page"
+      "50": "Partial policies"
+      "100": "Shipping, returns and privacy policies present"

@@ -1,0 +1,40 @@
+id: on-store-schema
+type: audit
+area: on_store
+version: 0.1.0
+engineApi: ^0.1.0
+label: { en: "Product schema", vi: "Schema sản phẩm" }
+criteria:
+  - id: schema.product
+    label: { en: "Product & Offer schema" }
+    group: schema
+    area: on_store
+    weight: high
+    scope: product_page
+    check: schema_present
+    scoring:
+      "0": "No Product schema"
+      "50": "Product schema without an Offer"
+      "100": "Product and Offer schema present"
+  - id: schema.enriched
+    label: { en: "Enriched schema fields" }
+    group: schema
+    area: on_store
+    weight: medium
+    scope: product_page
+    check: schema_enriched
+    scoring:
+      "0": "No brand/GTIN/ratings/reviews/FAQ"
+      "50": "A few enriched fields"
+      "100": "Brand, GTIN, ratings/reviews and FAQ present"
+  - id: content.unique-description
+    label: { en: "Unique, helpful description" }
+    group: content
+    area: on_store
+    weight: high
+    scope: product_page
+    check: llm_judge
+    scoring:
+      "0": "Missing or manufacturer-boilerplate description"
+      "50": "Some original description"
+      "100": "Unique, specific, shopper-useful description"

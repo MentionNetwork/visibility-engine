@@ -1,0 +1,40 @@
+id: on-store-access
+type: audit
+area: on_store
+version: 0.1.0
+engineApi: ^0.1.0
+label: { en: "AI access", vi: "AI truy cập được" }
+criteria:
+  - id: access.robots
+    label: { en: "AI crawlers allowed" }
+    group: access
+    area: on_store
+    weight: critical
+    scope: store
+    check: robots_allows_bot
+    scoring:
+      "0": "AI crawlers blocked in robots.txt or at the edge"
+      "50": "Some AI crawlers allowed, some blocked"
+      "100": "All major AI crawlers allowed"
+  - id: access.served-html
+    label: { en: "Product data in served HTML" }
+    group: access
+    area: on_store
+    weight: critical
+    scope: product_page
+    check: served_html_has_product_data
+    scoring:
+      "0": "Product data only appears after JavaScript renders"
+      "50": "Some product data in served HTML"
+      "100": "Name and price present in served HTML"
+  - id: access.img-alt
+    label: { en: "Images have alt text" }
+    group: access
+    area: on_store
+    weight: medium
+    scope: product_page
+    check: img_alt
+    scoring:
+      "0": "No product images have alt text"
+      "50": "Some product images have alt text"
+      "100": "All product images have alt text"
