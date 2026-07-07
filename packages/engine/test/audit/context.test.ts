@@ -51,4 +51,37 @@ describe("buildContext", () => {
     expect(ctx.productPage).toBeNull();
     expect(ctx.robots).toContain("User-agent");
   });
+
+  test("fetches llms.txt and sitemap.xml and sets them on the context", async () => {
+    const fetcher = new FakePageFetcher(null, {
+      "https://glow.ae/serum": { rawHtml: "<h1>Serum</h1>" },
+      "https://glow.ae/llms.txt": { rawHtml: "# Glow\nWe sell serum." },
+      "https://glow.ae/sitemap.xml": { rawHtml: "<urlset></urlset>" },
+    });
+    const ctx = await buildContext(target, [], fetcher);
+    expect(ctx.llmsTxt).toContain("Glow");
+    expect(ctx.sitemapXml).toContain("urlset");
+  });
+
+  test("degrades llmsTxt/sitemapXml to null on a non-2xx/3xx status", async () => {
+    const fetcher = new FakePageFetcher(null, {
+      "https://glow.ae/serum": { rawHtml: "<h1>Serum</h1>" },
+      "https://glow.ae/llms.txt": { status: 404 },
+      "https://glow.ae/sitemap.xml": { status: 404 },
+    });
+    const ctx = await buildContext(target, [], fetcher);
+    expect(ctx.llmsTxt).toBeNull();
+    expect(ctx.sitemapXml).toBeNull();
+  });
+
+  test("degrades llmsTxt/sitemapXml to null when the fetch throws", async () => {
+    const fetcher = new FakePageFetcher(
+      null,
+      { "https://glow.ae/serum": { rawHtml: "<h1>Serum</h1>" } },
+      { throwRawUrls: ["https://glow.ae/llms.txt", "https://glow.ae/sitemap.xml"] },
+    );
+    const ctx = await buildContext(target, [], fetcher);
+    expect(ctx.llmsTxt).toBeNull();
+    expect(ctx.sitemapXml).toBeNull();
+  });
 });

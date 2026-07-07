@@ -226,6 +226,8 @@ export interface AuditContext {
   robots: string | null;
   productPage: PageBundle | null;
   storePages: Record<string, PageBundle>;
+  llmsTxt?: string | null;
+  sitemapXml?: string | null;
 }
 
 export type CheckResult =

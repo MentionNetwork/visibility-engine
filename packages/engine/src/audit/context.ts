@@ -1,6 +1,15 @@
 import type { ScanTarget, Criterion, AuditContext, PageBundle } from "@mention-network/shared";
 import type { PageFetcherPort } from "./ports.js";
 
+async function fetchText(fetcher: PageFetcherPort, url: string): Promise<string | null> {
+  try {
+    const b = await fetcher.getRaw(url);
+    return b.status < 400 ? b.rawHtml : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function buildContext(
   target: ScanTarget,
   criteria: Criterion[],
@@ -25,5 +34,9 @@ export async function buildContext(
     try { storePages[key] = await fetcher.getRaw(`https://${target.store.domain}/${key}`); } catch { /* missing page */ }
   }
 
-  return { target, robots, productPage, storePages };
+  const origin = `https://${target.store.domain}`;
+  const llmsTxt = await fetchText(fetcher, `${origin}/llms.txt`);
+  const sitemapXml = await fetchText(fetcher, `${origin}/sitemap.xml`);
+
+  return { target, robots, productPage, storePages, llmsTxt, sitemapXml };
 }

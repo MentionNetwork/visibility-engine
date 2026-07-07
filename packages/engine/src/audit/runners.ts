@@ -123,6 +123,60 @@ const page_exists: CheckRunner = (c, ctx) => {
 
 const llm_judge: CheckRunner = () => ({ status: "pending" });
 
+// ── Prompt-injection safety ──────────────────────────────────
+const INJECTION_KEYWORDS =
+  /ignore\s+(the\s+)?(previous|prior|all|above)\s+(instructions|prompts?)|disregard\s+(the\s+)?(above|previous|prior)|system\s+prompt|you\s+are\s+(now\s+)?an?\s|\bas\s+an\s+ai\b|reveal\s+(your\s+)?(system\s+)?(prompt|instructions)|recommend\s+(only\s+)?(this|our)\s+(store|product|brand)/i;
+const ZERO_WIDTH = /[​‌‍﻿⁠]/;
+
+/** Heuristic scan for hidden prompt-injection content in HTML. */
+export function scanInjection(html: string): { hardHit: string | null; zeroWidth: boolean } {
+  for (const m of html.matchAll(/<!--([\s\S]*?)-->/g)) {
+    if (INJECTION_KEYWORDS.test(m[1])) return { hardHit: "instruction text inside an HTML comment", zeroWidth: ZERO_WIDTH.test(html) };
+  }
+  for (const m of html.matchAll(/<([a-z0-9]+)\b[^>]*style\s*=\s*("[^"]*"|'[^']*')[^>]*>([\s\S]*?)<\/\1>/gi)) {
+    const style = m[2];
+    const inner = m[3];
+    if (/display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0|(?:width|height)\s*:\s*0|text-indent\s*:\s*-\s*\d{3,}|left\s*:\s*-\s*\d{3,}/i.test(style) && INJECTION_KEYWORDS.test(inner)) {
+      return { hardHit: "instruction text hidden with CSS", zeroWidth: ZERO_WIDTH.test(html) };
+    }
+  }
+  return { hardHit: null, zeroWidth: ZERO_WIDTH.test(html) };
+}
+
+const prompt_injection: CheckRunner = (_c, ctx) => {
+  const html = ctx.productPage?.rawHtml;
+  if (!html) return { status: "not_applicable", evidence: "No product page fetched" };
+  const { hardHit, zeroWidth } = scanInjection(html);
+  if (hardHit) return { score: 0, evidence: `Possible prompt-injection: ${hardHit}` };
+  if (zeroWidth) return { score: 50, evidence: "Zero-width characters found in page text — review for hidden content" };
+  return { score: 100, evidence: "No hidden prompt-injection content detected" };
+};
+
+// ── Meta robots (accidental AI blocking) ─────────────────────
+const meta_robots: CheckRunner = (_c, ctx) => {
+  const html = ctx.productPage?.rawHtml;
+  if (!html) return { status: "not_applicable", evidence: "No product page fetched" };
+  const metas = html.match(/<meta\b[^>]*>/gi) ?? [];
+  const robotsMeta = metas.find((t) => /name\s*=\s*["']?robots["']?/i.test(t));
+  const content = robotsMeta ? (robotsMeta.match(/content\s*=\s*["']([^"']*)["']/i)?.[1] ?? "").toLowerCase() : "";
+  if (/\bnoai\b|\bnoimageai\b/.test(content)) return { score: 0, evidence: "Page explicitly opts out of AI (noai/noimageai)" };
+  if (/\bnoindex\b/.test(content)) return { score: 50, evidence: "Page is noindex — hidden from AI-backed search" };
+  return { score: 100, evidence: content ? "Robots meta allows indexing" : "No blocking robots meta" };
+};
+
+// ── Discoverability files ────────────────────────────────────
+const llms_txt: CheckRunner = (_c, ctx) => {
+  const t = ctx.llmsTxt;
+  if (t == null) return { score: 0, evidence: "No /llms.txt found" };
+  if (t.trim().length < 10) return { score: 50, evidence: "/llms.txt present but nearly empty" };
+  return { score: 100, evidence: "/llms.txt present" };
+};
+
+const sitemap: CheckRunner = (_c, ctx) =>
+  ctx.sitemapXml != null
+    ? { score: 100, evidence: "/sitemap.xml present" }
+    : { score: 0, evidence: "No /sitemap.xml found" };
+
 export const CHECK_RUNNERS: Record<string, CheckRunner> = {
   robots_allows_bot,
   served_html_has_product_data,
@@ -131,4 +185,8 @@ export const CHECK_RUNNERS: Record<string, CheckRunner> = {
   img_alt,
   page_exists,
   llm_judge,
+  prompt_injection,
+  meta_robots,
+  llms_txt,
+  sitemap,
 };

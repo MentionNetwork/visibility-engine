@@ -38,3 +38,25 @@ criteria:
       "0": "No product images have alt text"
       "50": "Some product images have alt text"
       "100": "All product images have alt text"
+  - id: access.llms-txt
+    label: { en: "llms.txt present" }
+    group: access
+    area: on_store
+    weight: medium
+    scope: store
+    check: llms_txt
+    scoring:
+      "0": "No /llms.txt"
+      "50": "/llms.txt present but nearly empty"
+      "100": "Curated /llms.txt present"
+  - id: access.sitemap
+    label: { en: "sitemap.xml present" }
+    group: access
+    area: on_store
+    weight: medium
+    scope: store
+    check: sitemap
+    scoring:
+      "0": "No /sitemap.xml"
+      "50": "Partial sitemap"
+      "100": "/sitemap.xml present"
