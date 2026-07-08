@@ -7,7 +7,9 @@
  * (a "Shopify App", a "WooCommerce extension") — the MN-side artifact is a connector.
  */
 
-import type { Prescription, StorePlatform } from "@mention-network/shared";
+import type {
+  Prescription, StorePlatform, Product, CollectionRef, ShippingSettings, MerchantFeedStatus,
+} from "@mention-network/shared";
 
 export type AuthKind = "oauth2" | "api_key" | "app_install" | "site_snippet";
 
@@ -24,7 +26,9 @@ export interface SetupGuide {
   docsUrl?: string;
 }
 
-export type ReadCap = "site" | "products" | "pages" | "structured_data" | "meta" | "sitemap" | "feeds";
+export type ReadCap =
+  | "site" | "products" | "pages" | "structured_data" | "meta" | "sitemap" | "feeds"
+  | "collections" | "metafields" | "shipping_settings" | "recommendations" | "merchant_feed_status";
 
 export interface ConnectorManifest {
   /** e.g. "mn-connector-shopify" */
@@ -70,7 +74,13 @@ export interface SiteConnector {
   read: {
     getSite(session: Session): Promise<Record<string, unknown>>;
     getPage(session: Session, urlOrId: string): Promise<PageSnapshot>;
-    listProducts?(session: Session): Promise<unknown[]>;
+    listProducts?(session: Session): Promise<Product[]>;
+    getProduct?(session: Session, productId: string): Promise<Product | null>;
+    listCollections?(session: Session, productId?: string): Promise<CollectionRef[]>;
+    getMetafields?(session: Session, productId: string): Promise<Record<string, string>>;
+    getShippingSettings?(session: Session): Promise<ShippingSettings | null>;
+    getRelatedProducts?(session: Session, productId: string): Promise<Product[] | null>;
+    getMerchantFeedStatus?(session: Session, productId?: string): Promise<MerchantFeedStatus | null>;
     getStructuredData?(session: Session, scope: string): Promise<unknown[]>;
     getMeta?(session: Session, scope: string): Promise<unknown>;
     getSitemap?(session: Session): Promise<unknown>;
