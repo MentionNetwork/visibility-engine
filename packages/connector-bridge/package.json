@@ -1,0 +1,16 @@
+{
+  "name": "@mention-network/connector-bridge",
+  "version": "0.1.0",
+  "description": "Adapts a connected SiteConnector into the engine's ports and enforces the plan → dry-run → apply write path.",
+  "license": "FSL-1.1-ALv2",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": { "build": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json --noEmit", "test": "vitest run" },
+  "dependencies": {
+    "@mention-network/shared": "workspace:*",
+    "@mention-network/connector-sdk": "workspace:*",
+    "@mention-network/engine": "workspace:*"
+  },
+  "devDependencies": { "vitest": "^2.1.8", "@types/node": "^22.10.0" }
+}

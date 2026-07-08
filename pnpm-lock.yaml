@@ -61,6 +61,25 @@ importers:
         specifier: ^8.1.3
         version: 8.1.3(@types/node@26.1.0)
 
+  packages/connector-bridge:
+    dependencies:
+      '@mention-network/connector-sdk':
+        specifier: workspace:*
+        version: link:../connector-sdk
+      '@mention-network/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@mention-network/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.0
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.0)(lightningcss@1.32.0)
+
   packages/connector-sdk:
     dependencies:
       '@mention-network/shared':
