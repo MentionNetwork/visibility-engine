@@ -1,5 +1,6 @@
 // AJV validator for pack data: walks base/*/pack.yaml and industries/*/pack.yaml,
 // each with a sibling intents/*.yaml directory, and checks them against pack.schema.json.
+// Also walks audit/*.yaml and checks them against audit/audit.schema.json.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,6 +12,9 @@ const schema = JSON.parse(readFileSync(join(root, "schema/pack.schema.json"), "u
 const ajv = new Ajv({ allErrors: true });
 const validatePack = ajv.compile(schema);
 const validateIntent = ajv.compile({ ...schema.$defs.intent, $defs: schema.$defs });
+
+const auditSchema = JSON.parse(readFileSync(join(root, "audit/audit.schema.json"), "utf8"));
+const validateAudit = ajv.compile(auditSchema);
 
 let failed = false;
 const check = (name, ok, errors) => {
@@ -48,6 +52,13 @@ for (const dir of packDirs) {
         validateIntent.errors,
       );
     }
+  }
+}
+
+const auditDir = join(root, "audit");
+if (existsSync(auditDir)) {
+  for (const f of readdirSync(auditDir).filter((f) => f.endsWith(".yaml"))) {
+    check(`audit/${f}`, validateAudit(load(readFileSync(join(auditDir, f), "utf8"))), validateAudit.errors);
   }
 }
 

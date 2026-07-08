@@ -1,0 +1,29 @@
+id: on-store-safety
+type: audit
+area: on_store
+version: 0.1.0
+engineApi: ^0.1.0
+label: { en: "Store safety", vi: "An toàn store" }
+criteria:
+  - id: safety.prompt-injection
+    label: { en: "No hidden prompt-injection content" }
+    group: safety
+    area: on_store
+    weight: critical
+    scope: product_page
+    check: prompt_injection
+    scoring:
+      "0": "Hidden content that could hijack an AI agent was found"
+      "50": "Zero-width or suspicious hidden characters — review"
+      "100": "No hidden prompt-injection content"
+  - id: safety.meta-robots
+    label: { en: "Not blocked from AI by meta robots" }
+    group: safety
+    area: on_store
+    weight: high
+    scope: product_page
+    check: meta_robots
+    scoring:
+      "0": "Page opts out of AI (noai/noimageai)"
+      "50": "Page is noindex"
+      "100": "Page is indexable by AI-backed search"
